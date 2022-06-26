@@ -23,9 +23,8 @@ public class InvoiceHeader {
     private ArrayList<InvoiceLine> InvoiceLines;
 
     public InvoiceHeader(int invoiceNum, Date invoiceDate, String customerName, ArrayList<InvoiceLine> InvoiceLines) {
-        String pattern = "(dd/MM/YYYY";
+        String pattern = "dd/MM/YYYY";
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
-        
         
         this.invoiceNum = invoiceNum;
         this.invoiceDate = simpleDateFormat.format(invoiceDate);
@@ -40,7 +39,15 @@ public class InvoiceHeader {
         this.invoiceNum = invoiceNum;
         this.invoiceDate = simpleDateFormat.format(invoiceDate);
         this.customerName = customerName;
-    } 
+        this.InvoiceLines = new ArrayList<InvoiceLine>();
+    }
+    
+    public InvoiceHeader(int invoiceNum, String invoiceDate, String customerName) {
+        this.invoiceNum = invoiceNum;
+        this.invoiceDate = invoiceDate;
+        this.customerName = customerName;
+        this.InvoiceLines = new ArrayList<InvoiceLine>();
+    }
     
     public int getInvoiceNum() {
         return invoiceNum;
@@ -71,12 +78,7 @@ public class InvoiceHeader {
     }
 
     public void setInvoiceLines(ArrayList<InvoiceLine> InvoiceLines) {
-        this.InvoiceLines = InvoiceLines;
-    }
-   
-    
-    
-    
-    
+        this.InvoiceLines.addAll(InvoiceLines);
+    } 
     
 }

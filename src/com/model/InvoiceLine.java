@@ -16,6 +16,13 @@ public class InvoiceLine {
     private float itemPrice;
     private int quantity;
 
+    public InvoiceLine(int invoiceNumber, String itemName, float itemPrice, int quantity) {
+        this.invoiceNumber = invoiceNumber;
+        this.itemName = itemName;
+        this.itemPrice = itemPrice;
+        this.quantity = quantity;
+    }
+
     public int getInvoiceNumber() {
         return invoiceNumber;
     }
@@ -48,6 +55,4 @@ public class InvoiceLine {
         this.quantity = quantity;
     }
     
-    
-
 }

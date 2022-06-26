@@ -6,18 +6,13 @@
 
 package com.view;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import javax.swing.JFileChooser;
+import com.controller.DateValidator;
+import com.controller.DateValidatorUsingDateFormat;
+import com.model.FileOperations;
+import com.model.InvoiceHeader;
+import java.util.ArrayList;
 import javax.swing.JOptionPane;
-import javax.swing.filechooser.FileNameExtensionFilter;
-import org.apache.poi.xssf.usermodel.XSSFCell;
-import org.apache.poi.xssf.usermodel.XSSFRow;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import javax.swing.table.DefaultTableModel;
 
 
 /**
@@ -26,19 +21,22 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
  */
 public class App extends javax.swing.JFrame {
     
+    static ArrayList<InvoiceHeader> invoiceHeader = null;
+    DefaultTableModel modelinvoicesTable;
+    DefaultTableModel modelinvoiceItem;
+    EditItems editItemFrame;
+    NewInvoice newInvoiceFrame;
     
-    private final JFileChooser fileChooser;
-
     /**
      * Creates new form main
      */
     public App() {
         initComponents();
         
-        fileChooser = new JFileChooser();
-        fileChooser.setCurrentDirectory(new File("c:\\temp"));
-        fileChooser.setFileFilter(new FileNameExtensionFilter("Excel Files", "xls", "xlsx", "xlsm"));
-        fileChooser.setDialogTitle("Select Excel File");
+        modelinvoicesTable = (DefaultTableModel) invoicesTable.getModel();
+        modelinvoiceItem = (DefaultTableModel) invoiceItem.getModel();
+        editItemFrame = new EditItems();
+        newInvoiceFrame = new NewInvoice();
     }
 
     /**
@@ -53,10 +51,10 @@ public class App extends javax.swing.JFrame {
         jPanel1 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
-        jTable1 = new javax.swing.JTable();
+        invoicesTable = new javax.swing.JTable();
         jPanel2 = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
-        jTable2 = new javax.swing.JTable();
+        invoiceItem = new javax.swing.JTable();
         delete_invoice_btn = new javax.swing.JButton();
         create_new_invoice_btn = new javax.swing.JButton();
         invoice_number_lable = new javax.swing.JLabel();
@@ -67,9 +65,10 @@ public class App extends javax.swing.JFrame {
         invoice_date = new javax.swing.JTextField();
         customer_name = new javax.swing.JTextField();
         invoice_total = new javax.swing.JLabel();
-        cancel_btn = new javax.swing.JButton();
+        edit_items_btn = new javax.swing.JButton();
         save_btn = new javax.swing.JButton();
         delete_item_btn = new javax.swing.JButton();
+        refresh_btn = new javax.swing.JButton();
         jMenuBar1 = new javax.swing.JMenuBar();
         file_menu = new javax.swing.JMenu();
         load_file_menu_item = new javax.swing.JMenuItem();
@@ -91,35 +90,33 @@ public class App extends javax.swing.JFrame {
         jLabel1.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
         jLabel1.setText("Invoices table");
 
-        jTable1.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
-        jTable1.setModel(new javax.swing.table.DefaultTableModel(
+        invoicesTable.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
+        invoicesTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null}
+
             },
             new String [] {
                 "No.", "Date", "Customer", "Total"
             }
-        ));
-        jScrollPane1.setViewportView(jTable1);
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        invoicesTable.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                invoicesTableMouseClicked(evt);
+            }
+        });
+        jScrollPane1.setViewportView(invoicesTable);
+        if (invoicesTable.getColumnModel().getColumnCount() > 0) {
+            invoicesTable.getColumnModel().getColumn(0).setPreferredWidth(7);
+            invoicesTable.getColumnModel().getColumn(2).setPreferredWidth(150);
+        }
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -147,28 +144,19 @@ public class App extends javax.swing.JFrame {
         jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Invoice Items", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 1, 12))); // NOI18N
         jPanel2.setPreferredSize(new java.awt.Dimension(442, 422));
 
-        jTable2.setModel(new javax.swing.table.DefaultTableModel(
+        invoiceItem.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null, null},
-                {null, null, null, null, null},
-                {null, null, null, null, null},
-                {null, null, null, null, null},
-                {null, null, null, null, null},
-                {null, null, null, null, null},
-                {null, null, null, null, null},
-                {null, null, null, null, null},
-                {null, null, null, null, null},
-                {null, null, null, null, null},
-                {null, null, null, null, null},
-                {null, null, null, null, null},
-                {null, null, null, null, null},
-                {null, null, null, null, null}
+
             },
             new String [] {
                 "No.", "Item Name", "Item Price", "Quantity", "Total"
             }
         ));
-        jScrollPane2.setViewportView(jTable2);
+        jScrollPane2.setViewportView(invoiceItem);
+        if (invoiceItem.getColumnModel().getColumnCount() > 0) {
+            invoiceItem.getColumnModel().getColumn(0).setPreferredWidth(18);
+            invoiceItem.getColumnModel().getColumn(1).setPreferredWidth(100);
+        }
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -224,10 +212,10 @@ public class App extends javax.swing.JFrame {
 
         invoice_total.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
-        cancel_btn.setText("Cancel");
-        cancel_btn.addActionListener(new java.awt.event.ActionListener() {
+        edit_items_btn.setText("Edit Items");
+        edit_items_btn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cancel_btnActionPerformed(evt);
+                edit_items_btnActionPerformed(evt);
             }
         });
 
@@ -242,6 +230,13 @@ public class App extends javax.swing.JFrame {
         delete_item_btn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 delete_item_btnActionPerformed(evt);
+            }
+        });
+
+        refresh_btn.setText("Refresh");
+        refresh_btn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                refresh_btnActionPerformed(evt);
             }
         });
 
@@ -308,10 +303,12 @@ public class App extends javax.swing.JFrame {
                         .addContainerGap()
                         .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(56, 56, 56)
+                        .addGap(30, 30, 30)
                         .addComponent(create_new_invoice_btn)
-                        .addGap(80, 80, 80)
-                        .addComponent(delete_invoice_btn, javax.swing.GroupLayout.PREFERRED_SIZE, 127, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(delete_invoice_btn, javax.swing.GroupLayout.PREFERRED_SIZE, 127, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(refresh_btn, javax.swing.GroupLayout.PREFERRED_SIZE, 127, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
@@ -319,7 +316,7 @@ public class App extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(delete_item_btn, javax.swing.GroupLayout.PREFERRED_SIZE, 127, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(26, 26, 26)
-                        .addComponent(cancel_btn, javax.swing.GroupLayout.PREFERRED_SIZE, 127, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(edit_items_btn, javax.swing.GroupLayout.PREFERRED_SIZE, 127, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(invoice_number_lable, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -370,10 +367,11 @@ public class App extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(delete_invoice_btn, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(create_new_invoice_btn, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(cancel_btn, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(edit_items_btn, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(save_btn, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(delete_item_btn, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(60, Short.MAX_VALUE))
+                    .addComponent(delete_item_btn, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(refresh_btn, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(62, Short.MAX_VALUE))
         );
 
         pack();
@@ -382,91 +380,148 @@ public class App extends javax.swing.JFrame {
 
     private void load_file_menu_itemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_load_file_menu_itemActionPerformed
         
-        // to show the dialog to select files
-        int hasFile = fileChooser.showOpenDialog(this);
+        FileOperations f = new FileOperations();
+        invoiceHeader = f.readFile();
+        float total = 0;
         
-        // to check if select file or not
-        if(hasFile == JFileChooser.APPROVE_OPTION) {
+        if(invoiceHeader != null){
             
-            // var to hold the excel file if it's exist
-            File excelFile;
-            FileInputStream excelFIS = null;
-            BufferedInputStream excelBIS= null;
-            XSSFWorkbook excelJTable = null;
-            
-            
-            try {
+            for(int i = 0 ; i < invoiceHeader.size(); i++){
                 
-                excelFile = fileChooser.getSelectedFile();
-                excelFIS = new FileInputStream(excelFile);
-                excelBIS = new BufferedInputStream(excelFIS);
-                excelJTable = new XSSFWorkbook(excelBIS);
-                
-                XSSFSheet excelSheet = excelJTable.getSheetAt(0);
-                
-                for(int row = 0 ; row < excelSheet.getLastRowNum() ; row++) {
-                    
-                    XSSFRow excelRow = excelSheet.getRow(row);
-                    
-                    for(int col = 0 ; col < excelRow.getLastCellNum() ; col++) {
-                        
-                        XSSFCell excelCell = excelRow.getCell(col);
-                        System.out.print(" " + excelCell + " ");
-                    }
+                for(int j = 0 ; j < invoiceHeader.get(i).getInvoiceLines().size(); j++){
+                    total += (float)invoiceHeader.get(i).getInvoiceLines().get(j).getItemPrice() * invoiceHeader.get(i).getInvoiceLines().get(j).getQuantity(); 
                 }
                 
-            }catch(FileNotFoundException e) {
-                JOptionPane.showMessageDialog(null, "File Not Found");
-            }catch(IOException e) {
-                JOptionPane.showMessageDialog(null, e.getMessage());
-            } finally {
-                
-                try {
-                    if(excelFIS != null) {
-                        excelFIS.close();
-                    }
-                    if(excelBIS != null) {
-                        excelBIS.close();
-                    }
-                    if(excelJTable != null) {
-                        excelJTable.close();
-                    }
-                } catch(Exception e) {
-                    e.printStackTrace();
-                }
-                
+                modelinvoicesTable.insertRow(modelinvoicesTable.getRowCount(),
+                                             new Object[]{invoiceHeader.get(i).getInvoiceNum(),
+                                                          invoiceHeader.get(i).getInvoiceDate(),
+                                                          invoiceHeader.get(i).getCustomerName(),
+                                                          total});
+                total = 0;
             }
-        
-        
-        } else {
-            JOptionPane.showMessageDialog(null, "File Not Selected");
+            
         }
-        
-        
+        else{
+            JOptionPane.showMessageDialog(null, "Plz, restart the app and select a right files", "Error", JOptionPane.ERROR_MESSAGE);
+        }
     }//GEN-LAST:event_load_file_menu_itemActionPerformed
 
     private void create_new_invoice_btnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_create_new_invoice_btnActionPerformed
-        // TODO add your handling code here:
+        
+        int index = modelinvoicesTable.getRowCount();
+        
+        
+        if(invoiceHeader != null){
+            newInvoiceFrame.setIndex(index+1);
+
+            newInvoiceFrame.setVisible(true);
+        }
+        else{
+            JOptionPane.showMessageDialog(null, "You Should Load Files First", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+        
     }//GEN-LAST:event_create_new_invoice_btnActionPerformed
 
     private void save_btnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_save_btnActionPerformed
-        // TODO add your handling code here:
+        
+        String invoiceDate =  invoice_date.getText();
+        String customerName = customer_name.getText();
+        
+        int index = invoicesTable.getSelectedRow();
+        
+        DateValidator validator = new DateValidatorUsingDateFormat("dd/MM/yyyy");
+
+        if(validator.isValid(invoiceDate)){
+            
+            invoiceHeader.get(index).setCustomerName(customerName);
+            invoiceHeader.get(index).setInvoiceDate(invoiceDate);
+            
+            printInvoicesTable();
+        }
+        else{
+            JOptionPane.showMessageDialog(null, "The Format of Date is invalid", "Error", JOptionPane.ERROR_MESSAGE);
+            invoiceDate = invoiceHeader.get(index).getInvoiceDate();
+            customerName = invoiceHeader.get(index).getCustomerName();
+        }
+        
+        invoice_date.setText(invoiceDate);
+        customer_name.setText(customerName);
+           
     }//GEN-LAST:event_save_btnActionPerformed
 
     private void delete_item_btnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_delete_item_btnActionPerformed
-        // TODO add your handling code here:
+        
+        int index = invoicesTable.getSelectedRow();
+        int itemNum = invoiceItem.getSelectedRow();
+        
+        if(itemNum != -1){
+            int result = JOptionPane.showConfirmDialog(null, "Do you want to confirm the deletion?", "Warning", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+            
+            if(result == 0){
+                
+                invoiceHeader.get(index).getInvoiceLines().remove(itemNum);
+                
+                printInvoiceItem();
+                
+            }
+        }
+        else{
+            JOptionPane.showMessageDialog(null, "You Should Select Item First", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+        
     }//GEN-LAST:event_delete_item_btnActionPerformed
 
-    private void cancel_btnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancel_btnActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_cancel_btnActionPerformed
+    private void edit_items_btnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_edit_items_btnActionPerformed
+        
+        int index = invoicesTable.getSelectedRow();
+        
+        if(index != -1){
+            
+            editItemFrame.setInvoiceLine(invoiceHeader.get(index).getInvoiceLines(), index);
+            editItemFrame.setVisible(true);
+            
+        }
+        else{
+            JOptionPane.showMessageDialog(null, "You Should Select Invoice First", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+        
+    }//GEN-LAST:event_edit_items_btnActionPerformed
 
     private void delete_invoice_btnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_delete_invoice_btnActionPerformed
-        // TODO add your handling code here:
+        
+        int index = invoicesTable.getSelectedRow();
+        
+        if(index != -1){
+            int result = JOptionPane.showConfirmDialog(null, "Do you want to confirm the deletion?", "Warning", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+            
+            if(result == 0){
+                
+                invoiceHeader.remove(index);
+                
+                printInvoicesTable();
+                
+                invoice_number.setText("   #");
+                invoice_date.setText("");
+                customer_name.setText("");
+                invoice_total.setText("");
+                
+                int rows = modelinvoiceItem.getRowCount();
+                for(int i = rows - 1; i >= 0 ; i--){
+                    modelinvoiceItem.removeRow(i);
+                }
+            }
+        }
+        else{
+            JOptionPane.showMessageDialog(null, "You Should Select Invoice First", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+        
     }//GEN-LAST:event_delete_invoice_btnActionPerformed
 
     private void save_file_menu_itemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_save_file_menu_itemActionPerformed
-        // TODO add your handling code here:
+        
+        String invoiceHeaderName = "InvoiceHeader"; 
+        String invoiceLineName = "InvoiceLine";
+        
     }//GEN-LAST:event_save_file_menu_itemActionPerformed
 
     private void invoice_dateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_invoice_dateActionPerformed
@@ -478,17 +533,131 @@ public class App extends javax.swing.JFrame {
     }//GEN-LAST:event_customer_nameActionPerformed
 
     private void instagramActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_instagramActionPerformed
-        // TODO add your handling code here:
+        
+        JOptionPane.showMessageDialog(null, "Insta : ahmed.farag57");
+        
     }//GEN-LAST:event_instagramActionPerformed
 
     private void twitterActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_twitterActionPerformed
-        // TODO add your handling code here:
+        
+        JOptionPane.showMessageDialog(null, "Twitter : @AhmedFarag_57");
+        
     }//GEN-LAST:event_twitterActionPerformed
 
     private void emailActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_emailActionPerformed
-        // TODO add your handling code here:
+        
+        JOptionPane.showMessageDialog(null, "Email : ahmadfarag1956@gmail.com");
+        
     }//GEN-LAST:event_emailActionPerformed
 
+    private void invoicesTableMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_invoicesTableMouseClicked
+        
+        if(invoiceHeader != null){
+        
+            int index = invoicesTable.getSelectedRow();
+
+            invoice_number.setText("   " + Integer.toString(invoiceHeader.get(index).getInvoiceNum()));
+            invoice_date.setText(invoiceHeader.get(index).getInvoiceDate());
+            customer_name.setText(invoiceHeader.get(index).getCustomerName());
+            
+            float total = 0;
+            
+            for(int j = 0 ; j < invoiceHeader.get(index).getInvoiceLines().size(); j++){
+                    total += (float)invoiceHeader.get(index).getInvoiceLines().get(j).getItemPrice() * invoiceHeader.get(index).getInvoiceLines().get(j).getQuantity(); 
+                }
+            
+            invoice_total.setText(Float.toString(total));
+            
+            //invoice_number.setText(modelinvoicesTable.getValueAt(index, 0).toString());
+            //invoice_date.setText(modelinvoicesTable.getValueAt(index, 1).toString());
+            //customer_name.setText(modelinvoicesTable.getValueAt(index, 2).toString());
+            
+            // to remove all rows in "Invoice Item"
+            int rows = modelinvoiceItem.getRowCount();
+            for(int j = rows - 1 ; j >= 0 ; j--){
+                modelinvoiceItem.removeRow(j);
+            }
+            
+            
+            for(int i = 0 ; i < invoiceHeader.get(index).getInvoiceLines().size(); i++){
+                modelinvoiceItem.insertRow(modelinvoiceItem.getRowCount(),
+                                       new Object[]{i+1,
+                                                    invoiceHeader.get(index).getInvoiceLines().get(i).getItemName(),
+                                                    invoiceHeader.get(index).getInvoiceLines().get(i).getItemPrice(),
+                                                    invoiceHeader.get(index).getInvoiceLines().get(i).getQuantity(),
+                                                    invoiceHeader.get(index).getInvoiceLines().get(i).getItemPrice()*
+                                                    invoiceHeader.get(index).getInvoiceLines().get(i).getQuantity()});
+            }
+            
+
+        }
+        else {
+            
+        }
+    }//GEN-LAST:event_invoicesTableMouseClicked
+
+    private void refresh_btnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refresh_btnActionPerformed
+        
+        if(invoiceHeader != null){
+            printInvoicesTable();
+        }
+        
+    }//GEN-LAST:event_refresh_btnActionPerformed
+    
+    private void printInvoicesTable(){
+        
+        int rows = modelinvoicesTable.getRowCount();
+        for(int k = rows - 1 ; k >= 0 ; k--){
+            modelinvoicesTable.removeRow(k);
+        }
+
+        float total = 0;
+        
+        for(int i = 0 ; i < invoiceHeader.size(); i++){
+                
+                for(int j = 0 ; j < invoiceHeader.get(i).getInvoiceLines().size(); j++){
+                    total += (float)invoiceHeader.get(i).getInvoiceLines().get(j).getItemPrice() * invoiceHeader.get(i).getInvoiceLines().get(j).getQuantity(); 
+                }
+                
+                modelinvoicesTable.insertRow(modelinvoicesTable.getRowCount(),
+                                             new Object[]{invoiceHeader.get(i).getInvoiceNum(),
+                                                          invoiceHeader.get(i).getInvoiceDate(),
+                                                          invoiceHeader.get(i).getCustomerName(),
+                                                          total});
+                total = 0;
+            }
+    }
+    
+    private void printInvoiceItem(){
+        
+        int rows = modelinvoiceItem.getRowCount();
+        for(int i = rows - 1; i >= 0 ; i--){
+            modelinvoiceItem.removeRow(i);
+        }
+        
+        int index = invoicesTable.getSelectedRow();
+        
+        float total = 0;
+        
+        for(int j = 0 ; j < invoiceHeader.get(index).getInvoiceLines().size(); j++){
+                modelinvoiceItem.insertRow(modelinvoiceItem.getRowCount(),
+                                       new Object[]{j+1,
+                                                    invoiceHeader.get(index).getInvoiceLines().get(j).getItemName(),
+                                                    invoiceHeader.get(index).getInvoiceLines().get(j).getItemPrice(),
+                                                    invoiceHeader.get(index).getInvoiceLines().get(j).getQuantity(),
+                                                    invoiceHeader.get(index).getInvoiceLines().get(j).getItemPrice()*
+                                                    invoiceHeader.get(index).getInvoiceLines().get(j).getQuantity()});
+            }
+        
+        for(int k = 0 ; k < invoiceHeader.get(index).getInvoiceLines().size(); k++){
+            total += (float)invoiceHeader.get(index).getInvoiceLines().get(k).getItemPrice()*invoiceHeader.get(index).getInvoiceLines().get(k).getQuantity();
+        }
+        
+        invoice_total.setText(Float.toString(total));
+        modelinvoicesTable.setValueAt(total, index, 3);
+        
+    }
+    
     /**
      * @param args the command line arguments
      */
@@ -526,30 +695,31 @@ public class App extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenu about_menu;
-    private javax.swing.JButton cancel_btn;
     private javax.swing.JButton create_new_invoice_btn;
     private javax.swing.JTextField customer_name;
     private javax.swing.JLabel customer_name_lable;
     private javax.swing.JButton delete_invoice_btn;
     private javax.swing.JButton delete_item_btn;
+    private javax.swing.JButton edit_items_btn;
     private javax.swing.JMenuItem email;
     private javax.swing.JMenu file_menu;
     private javax.swing.JMenuItem instagram;
+    private javax.swing.JTable invoiceItem;
     private javax.swing.JTextField invoice_date;
     private javax.swing.JLabel invoice_date_lable;
     private javax.swing.JLabel invoice_number;
     private javax.swing.JLabel invoice_number_lable;
     private javax.swing.JLabel invoice_total;
     private javax.swing.JLabel invoice_total_lable;
+    private javax.swing.JTable invoicesTable;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JTable jTable1;
-    private javax.swing.JTable jTable2;
     private javax.swing.JMenuItem load_file_menu_item;
+    private javax.swing.JButton refresh_btn;
     private javax.swing.JButton save_btn;
     private javax.swing.JMenuItem save_file_menu_item;
     private javax.swing.JMenuItem twitter;
