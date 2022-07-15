@@ -79,6 +79,12 @@ public class InvoiceHeader {
 
     public void setInvoiceLines(ArrayList<InvoiceLine> InvoiceLines) {
         this.InvoiceLines.addAll(InvoiceLines);
-    } 
+    }
+    
+    public void invoiceLineClear(){
+        for(int i = (InvoiceLines.size()-1); i > 0; i--){
+            InvoiceLines.remove(i);
+        }
+    }
     
 }

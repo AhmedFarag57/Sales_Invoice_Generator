@@ -10,6 +10,7 @@ package com.model;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -18,7 +19,11 @@ import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.CreationHelper;
 import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
@@ -62,8 +67,6 @@ public class FileOperations {
 
                 System.out.println("}\n\n");
             }
-
-            System.out.println("Done");
         }
         else {
             JOptionPane.showMessageDialog(null, "Plz, restart the app and select a right files", "Error", JOptionPane.ERROR_MESSAGE);
@@ -241,9 +244,104 @@ public class FileOperations {
         return null;
     }    
     
-    public void writeFile(ArrayList<InvoiceHeader> invoiceHeader) {
+    public int writeFile(ArrayList<InvoiceHeader> invoiceHeader) {
         
+        if(invoiceHeader != null){
+            
+            FileNameExtensionFilter filter = new FileNameExtensionFilter("Excel Files", "xlsx");
+            
+            JFileChooser fs1 = new JFileChooser();
+            fs1.setDialogTitle("Save a File \"Header file\"");
+            fs1.removeChoosableFileFilter(fs1.getFileFilter());
+            fs1.setFileFilter(filter);
+            
+            JFileChooser fs2 = new JFileChooser();
+            fs2.setDialogTitle("Save a File \"Line file\"");
+            fs2.removeChoosableFileFilter(fs2.getFileFilter());
+            fs2.setFileFilter(filter);
+            
+            int result1 = fs1.showSaveDialog(null);
+            int result2 = fs2.showSaveDialog(null);
+            
+            if(result1 == JFileChooser.APPROVE_OPTION && result2 == JFileChooser.APPROVE_OPTION){
+            
+                //
+                try{
+                    // First -> create a workbook with .xlsx format
+                    Workbook workbook1 = new XSSFWorkbook();
+                    Workbook workbook2 = new XSSFWorkbook();
+                    // Sec -> create sheet
+                    Sheet invoiceHeaderSheet = workbook1.createSheet("Invoice Header");
+                    Sheet invoiceLineSheet = workbook2.createSheet("Invoice Line");
+                    //
+                    CreationHelper creationHelper = workbook1.getCreationHelper();
+                    CellStyle dateStyle = workbook1.createCellStyle();
+                    dateStyle.setDataFormat(creationHelper.createDataFormat().getFormat("dd/MM/yyyy"));
 
+                    int rowNumber1 = 0;
+                    int rowNumber2 = 0;
+
+                    for(InvoiceHeader i : invoiceHeader){
+                        Row row = invoiceHeaderSheet.createRow(rowNumber1++);
+
+                        row.createCell(0).setCellValue(rowNumber1);
+
+                        Cell dateCell = row.createCell(1);
+                        dateCell.setCellValue(i.getInvoiceDate());
+                        dateCell.setCellStyle(dateStyle);
+
+                        row.createCell(2).setCellValue(i.getCustomerName());
+
+                        // create the Invoice Line
+                        for(InvoiceLine j : i.getInvoiceLines()){
+                            Row row2 = invoiceLineSheet.createRow(rowNumber2++);
+
+                            row2.createCell(0).setCellValue(j.getInvoiceNumber());
+
+                            row2.createCell(1).setCellValue(j.getItemName());
+
+                            row2.createCell(2).setCellValue(j.getItemPrice());
+
+                            row2.createCell(3).setCellValue(j.getQuantity());
+                        }
+                    }
+                    
+                    // try to create invoice header file in specific location
+                    try(FileOutputStream invoiceHeaderFile = new FileOutputStream((fs1.getSelectedFile() + ".xlsx"))){
+
+                        workbook1.write(invoiceHeaderFile);
+                        invoiceHeaderFile.close();
+                    }
+                    catch(Exception e){
+                        JOptionPane.showMessageDialog(null, "The file cannot be created in the specified location", "Error", JOptionPane.ERROR_MESSAGE);
+                    }
+
+
+                    // try to create invoice line file in specific location
+                    try(FileOutputStream invoiceLineFile = new FileOutputStream((fs2.getSelectedFile() + ".xlsx"))){
+
+                        workbook2.write(invoiceLineFile);
+                        invoiceLineFile.close();
+                    }
+                    catch(Exception e){
+                        JOptionPane.showMessageDialog(null, "The file cannot be created in the specified location", "Error", JOptionPane.ERROR_MESSAGE);
+                    }
+                    
+                    return 1;
+
+                }
+                catch(Exception e){
+                    e.printStackTrace();
+                }
+            }
+            else{
+                JOptionPane.showMessageDialog(null, "Error in select the location", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+        else{
+            JOptionPane.showMessageDialog(null, "Plz, Load the files first", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+        
+        return 0;   
     }
-    
 }

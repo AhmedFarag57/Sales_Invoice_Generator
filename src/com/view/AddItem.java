@@ -159,12 +159,11 @@ public class AddItem extends javax.swing.JFrame {
             
             if(quantity > 0){
                 
-                EditItems.invoiceLine.add(new InvoiceLine(EditItems.index, itemName, itemPrice, quantity));
+                EditItems.invoiceLine.add(new InvoiceLine((EditItems.index+1), itemName, itemPrice, quantity));
                 JOptionPane.showMessageDialog(null, "The Item is added successfully");
                 
                 WindowEvent closeWindow = new WindowEvent(this, WindowEvent.WINDOW_CLOSING);
                 Toolkit.getDefaultToolkit().getSystemEventQueue().postEvent(closeWindow);
-                
             }
             else{
                 JOptionPane.showMessageDialog(null, "The Quantity can't be a \" 0 \" or negative value.", "Error", JOptionPane.ERROR_MESSAGE);
@@ -173,6 +172,8 @@ public class AddItem extends javax.swing.JFrame {
         else{
             JOptionPane.showMessageDialog(null, "The Price can't be a \" 0 \" or negative value.", "Error", JOptionPane.ERROR_MESSAGE);
         }
+        
+        EditItems.printInvoiceLine();
         
     }//GEN-LAST:event_add_btnActionPerformed
 

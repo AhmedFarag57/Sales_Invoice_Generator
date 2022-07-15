@@ -18,10 +18,11 @@ import javax.swing.table.DefaultTableModel;
  */
 public class EditItems extends javax.swing.JFrame {
 
-    AddItem addItemFrame;
+    static AddItem addItemFrame;
     static ArrayList<InvoiceLine> invoiceLine;
     static int index;
-    DefaultTableModel modelinvoiceItem;
+    static DefaultTableModel modelinvoiceItem;
+    App app;
 
     /**
      * Creates new form EditItems
@@ -192,13 +193,12 @@ public class EditItems extends javax.swing.JFrame {
                 break;
             }
             
-            tempItem.add(new InvoiceLine(index, itemName, itemPrice, quantity));
+            tempItem.add(new InvoiceLine((index+1), itemName, itemPrice, quantity));
         }
         
         if(!errorFlag){
-            
-            
             App.invoiceHeader.get(index).getInvoiceLines().clear();
+            //App.invoiceHeader.get(index).invoiceLineClear();
             
             App.invoiceHeader.get(index).setInvoiceLines(tempItem);
             
@@ -209,9 +209,13 @@ public class EditItems extends javax.swing.JFrame {
             
         }
         else{
+            tempItem.clear();
             JOptionPane.showMessageDialog(null, "You Enter Some invalid data\n\nPlz, check what you type", "Error", JOptionPane.ERROR_MESSAGE);
         }
-
+        
+        //
+        app.printInvoiceItem();
+        
     }//GEN-LAST:event_save_btnActionPerformed
 
     private void cancle_btnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancle_btnActionPerformed
@@ -227,10 +231,11 @@ public class EditItems extends javax.swing.JFrame {
         
     }//GEN-LAST:event_add_item_btnActionPerformed
 
-    public void setInvoiceLine(ArrayList<InvoiceLine> invoiceLine, int index) {
-        this.invoiceLine.addAll(invoiceLine);
+    public void setInvoiceLine(ArrayList<InvoiceLine> invoiceLine, int index, App app) {
+        this.invoiceLine = invoiceLine;
         this.index = index;
-
+        this.app = app;
+        
         int rows = modelinvoiceItem.getRowCount();
         for (int j = rows - 1; j >= 0; j--) {
             modelinvoiceItem.removeRow(j);
@@ -244,6 +249,21 @@ public class EditItems extends javax.swing.JFrame {
                         invoiceLine.get(i).getQuantity()});
         }
 
+    }
+    
+    public static void printInvoiceLine(){
+        int rows = modelinvoiceItem.getRowCount();
+        for (int j = rows - 1; j >= 0; j--) {
+            modelinvoiceItem.removeRow(j);
+        }
+
+        for (int i = 0; i < invoiceLine.size(); i++) {
+            modelinvoiceItem.insertRow(modelinvoiceItem.getRowCount(),
+                    new Object[]{i + 1,
+                        invoiceLine.get(i).getItemName(),
+                        invoiceLine.get(i).getItemPrice(),
+                        invoiceLine.get(i).getQuantity()});
+        }
     }
 
     /**

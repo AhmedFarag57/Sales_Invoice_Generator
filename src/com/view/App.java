@@ -151,7 +151,15 @@ public class App extends javax.swing.JFrame {
             new String [] {
                 "No.", "Item Name", "Item Price", "Quantity", "Total"
             }
-        ));
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false, false
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
         jScrollPane2.setViewportView(invoiceItem);
         if (invoiceItem.getColumnModel().getColumnCount() > 0) {
             invoiceItem.getColumnModel().getColumn(0).setPreferredWidth(18);
@@ -412,7 +420,7 @@ public class App extends javax.swing.JFrame {
         
         
         if(invoiceHeader != null){
-            newInvoiceFrame.setIndex(index+1);
+            newInvoiceFrame.setIndex(index+1, this);
 
             newInvoiceFrame.setVisible(true);
         }
@@ -423,30 +431,35 @@ public class App extends javax.swing.JFrame {
     }//GEN-LAST:event_create_new_invoice_btnActionPerformed
 
     private void save_btnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_save_btnActionPerformed
-        
-        String invoiceDate =  invoice_date.getText();
-        String customerName = customer_name.getText();
+
         
         int index = invoicesTable.getSelectedRow();
         
-        DateValidator validator = new DateValidatorUsingDateFormat("dd/MM/yyyy");
+        if(index != -1){
+            String invoiceDate =  invoice_date.getText();
+            String customerName = customer_name.getText();
 
-        if(validator.isValid(invoiceDate)){
-            
-            invoiceHeader.get(index).setCustomerName(customerName);
-            invoiceHeader.get(index).setInvoiceDate(invoiceDate);
-            
-            printInvoicesTable();
+            DateValidator validator = new DateValidatorUsingDateFormat("dd/MM/yyyy");
+
+            if(validator.isValid(invoiceDate)){
+
+                invoiceHeader.get(index).setCustomerName(customerName);
+                invoiceHeader.get(index).setInvoiceDate(invoiceDate);
+
+                printInvoicesTable();
+            }
+            else{
+                JOptionPane.showMessageDialog(null, "The Format of Date is invalid", "Error", JOptionPane.ERROR_MESSAGE);
+                invoiceDate = invoiceHeader.get(index).getInvoiceDate();
+                customerName = invoiceHeader.get(index).getCustomerName();
+            }
+
+            invoice_date.setText(invoiceDate);
+            customer_name.setText(customerName);
         }
         else{
-            JOptionPane.showMessageDialog(null, "The Format of Date is invalid", "Error", JOptionPane.ERROR_MESSAGE);
-            invoiceDate = invoiceHeader.get(index).getInvoiceDate();
-            customerName = invoiceHeader.get(index).getCustomerName();
+            JOptionPane.showMessageDialog(null, "You Should Select Invoice First", "Error", JOptionPane.ERROR_MESSAGE);
         }
-        
-        invoice_date.setText(invoiceDate);
-        customer_name.setText(customerName);
-           
     }//GEN-LAST:event_save_btnActionPerformed
 
     private void delete_item_btnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_delete_item_btnActionPerformed
@@ -477,7 +490,7 @@ public class App extends javax.swing.JFrame {
         
         if(index != -1){
             
-            editItemFrame.setInvoiceLine(invoiceHeader.get(index).getInvoiceLines(), index);
+            editItemFrame.setInvoiceLine(invoiceHeader.get(index).getInvoiceLines(), index, this);
             editItemFrame.setVisible(true);
             
         }
@@ -519,8 +532,16 @@ public class App extends javax.swing.JFrame {
 
     private void save_file_menu_itemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_save_file_menu_itemActionPerformed
         
-        String invoiceHeaderName = "InvoiceHeader"; 
-        String invoiceLineName = "InvoiceLine";
+        FileOperations f = new FileOperations();
+        
+        int result = f.writeFile(invoiceHeader);
+        
+        if(result == 1){
+            JOptionPane.showMessageDialog(null, "Files saved successfully", "saved successfully", JOptionPane.INFORMATION_MESSAGE);
+        }
+        else{
+            JOptionPane.showMessageDialog(null, "Error in save files, Try again !", "Error", JOptionPane.ERROR_MESSAGE);
+        }
         
     }//GEN-LAST:event_save_file_menu_itemActionPerformed
 
@@ -555,7 +576,7 @@ public class App extends javax.swing.JFrame {
         if(invoiceHeader != null){
         
             int index = invoicesTable.getSelectedRow();
-
+            
             invoice_number.setText("   " + Integer.toString(invoiceHeader.get(index).getInvoiceNum()));
             invoice_date.setText(invoiceHeader.get(index).getInvoiceDate());
             customer_name.setText(invoiceHeader.get(index).getCustomerName());
@@ -604,7 +625,7 @@ public class App extends javax.swing.JFrame {
         
     }//GEN-LAST:event_refresh_btnActionPerformed
     
-    private void printInvoicesTable(){
+    public void printInvoicesTable(){
         
         int rows = modelinvoicesTable.getRowCount();
         for(int k = rows - 1 ; k >= 0 ; k--){
@@ -628,7 +649,7 @@ public class App extends javax.swing.JFrame {
             }
     }
     
-    private void printInvoiceItem(){
+    public void printInvoiceItem(){
         
         int rows = modelinvoiceItem.getRowCount();
         for(int i = rows - 1; i >= 0 ; i--){

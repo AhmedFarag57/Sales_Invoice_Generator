@@ -22,6 +22,7 @@ import javax.swing.JOptionPane;
 public class NewInvoice extends javax.swing.JFrame {
 
     int index;
+    App app;
     
     /**
      * Creates new form NewInvoice
@@ -115,7 +116,7 @@ public class NewInvoice extends javax.swing.JFrame {
                     .addComponent(date_lable, javax.swing.GroupLayout.PREFERRED_SIZE, 44, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(invoice_date, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(cancle_btn, javax.swing.GroupLayout.PREFERRED_SIZE, 44, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(270, Short.MAX_VALUE))
+                .addContainerGap(139, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -166,7 +167,8 @@ public class NewInvoice extends javax.swing.JFrame {
             invoice_date.setText(simpleDateFormat.format(date));
             
         }
-        
+        //
+        app.printInvoicesTable();
     }//GEN-LAST:event_save_btnActionPerformed
 
     private void cancle_btnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancle_btnActionPerformed
@@ -176,8 +178,9 @@ public class NewInvoice extends javax.swing.JFrame {
         
     }//GEN-LAST:event_cancle_btnActionPerformed
 
-    public void setIndex(int index){
+    public void setIndex(int index, App app){
         this.index = index;
+        this.app = app;
     }
     
     /**
